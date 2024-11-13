@@ -1,4 +1,3 @@
-using AspNetCore.Identity.Mongo.Model;
 using BackEnd.DTOs;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +12,7 @@ namespace BackEnd.Controllers
         private readonly ILogger<UserController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-
+        
         public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             _logger = logger;
@@ -22,7 +21,7 @@ namespace BackEnd.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> Create(UserDto user)
+        public async Task<ActionResult> Create(UserDto user)
         {
             if (!ModelState.IsValid)
             {
@@ -36,16 +35,19 @@ namespace BackEnd.Controllers
             };
 
             IdentityResult result = await _userManager.CreateAsync(appUser, user.Password);
+
             if (result.Succeeded)
-                return Created();
+            {
+                return Ok();
+            }
             else
             {
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                return BadRequest("Choose an available username");
             }
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(UserDto user)
+        public async Task<ActionResult> Login(UserDto user)
         {
             if (!ModelState.IsValid)
             {

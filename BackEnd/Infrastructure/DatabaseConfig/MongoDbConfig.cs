@@ -12,6 +12,6 @@ namespace Infrastructure.DatabaseConfig
         public required string Host { get; init; }
         public required int Port { get; init; }
         public required string IdentityCollectionName { get; set; }
-        public string ConnectionString => $"mongodb://{Host}:{Port}";
+        public string ConnectionString => $"mongodb://{Host}:{Port}/{DatabaseName}";
     }
 }

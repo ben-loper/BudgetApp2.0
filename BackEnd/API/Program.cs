@@ -12,7 +12,7 @@ builder.Services.AddIdentityMongoDbProvider<ApplicationUser, ApplicationRole>(
     identity => { },
     mongo =>
     {
-        mongo.ConnectionString = $"{mongoDbSettings.ConnectionString}/{mongoDbSettings.DatabaseName}";
+        mongo.ConnectionString = $"{mongoDbSettings.ConnectionString}";
         mongo.UsersCollection = mongoDbSettings.IdentityCollectionName;
     }
 );
