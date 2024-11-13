@@ -28,7 +28,7 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            ApplicationUser appUser = new ApplicationUser
+            var appUser = new ApplicationUser
             {
                 UserName = user.Name,
                 Email = user.Email
@@ -62,12 +62,21 @@ namespace BackEnd.Controllers
 
             if (result.Succeeded)
             {
+                
                 return Ok();
             }
             else
             {
                 return BadRequest("Email or password is incorrect");
             }
+        }
+
+        [HttpPost("Logout")]
+        public async Task<ActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+
+            return Ok();
         }
     }
 }

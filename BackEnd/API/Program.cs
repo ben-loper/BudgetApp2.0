@@ -1,6 +1,7 @@
 using AspNetCore.Identity.Mongo;
 using Infrastructure.DatabaseConfig;
 using Infrastructure.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,23 @@ builder.Services.AddIdentityMongoDbProvider<ApplicationUser, ApplicationRole>(
         mongo.UsersCollection = mongoDbSettings.IdentityCollectionName;
     }
 );
+
+// Setup middleware to return 401 if the user is not logged instead of attempting to redirect to login
+// Without this, it will return a 404
+builder.Services.ConfigureApplicationCookie(options => 
+{ 
+    options.Events = new CookieAuthenticationEvents { 
+        OnRedirectToLogin = ctx => 
+        { 
+            if (ctx.Response.StatusCode == 200) 
+            { 
+                ctx.Response.StatusCode = 401; 
+            } 
+
+            return Task.CompletedTask; 
+        } 
+    }; 
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -33,6 +51,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
