@@ -24,5 +24,14 @@ namespace BackEnd.Controllers
 
             return user.UserName ?? throw new UserNotLoggedInException();
         }
+
+        protected async Task<string> GetUserIdByUsername(string userName)
+        {
+            var user = await _userManager.FindByNameAsync(userName);
+
+            if (user == null) throw new UserDoesNotExistException();
+
+            return user.Id.ToString();
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AspNetCore.Identity.Mongo.Mongo;
 using BackEnd.DTOs.FamilyDtos;
+using BackEnd.Exceptions;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -39,9 +40,10 @@ namespace BackEnd.Controllers
             };
 
             await _familyCollection.InsertOneAsync(family);
-            
+
             var familyDto = new FamilyDto()
             {
+                Id = family.Id.ToString(),
                 Name = createFamilyDto.Name,
                 AdminUsers = [await GetUsernameAsync()],
                 Members = new List<string>()
@@ -61,23 +63,75 @@ namespace BackEnd.Controllers
 
             var familyDto = new FamilyDto()
             {
+                Id = family.Id,
                 Name = family.Name,
                 AdminUsers = [],
                 Members = []
             };
 
-            var adminUsers = new List<string>();
-
             foreach (var userId in family.AdminUserIds)
             {
                 var person = await _userManager.FindByIdAsync(userId);
 
-                adminUsers.Add(person.UserName);
+                familyDto.AdminUsers.Add(person.UserName);
             }
 
-            familyDto.AdminUsers = adminUsers;
+            foreach (var userId in family.MemberUserIds)
+            {
+                var person = await _userManager.FindByIdAsync(userId);
+
+                familyDto.Members.Add(person.UserName);
+            }
 
             return Ok(familyDto);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<FamilyDto>> AddUserToFamily(string familyId, string username, bool isAdmin = false)
+        {
+            string? userId = null;
+
+            try
+            {
+                userId = await GetUserIdByUsername(username);
+            }
+            catch (UserDoesNotExistException)
+            {
+                return BadRequest("User does not exist");
+            }
+
+            var family = await _familyCollection.FirstOrDefaultAsync(family => family.Id == familyId);
+
+            if (family == null) return NotFound("No family exists with the given Id");
+
+            var existingFamily = await _familyCollection.FirstOrDefaultAsync(f => f.AdminUserIds.Contains(userId)
+                                                                || f.MemberUserIds.Contains(userId)
+                                                            );
+
+            if (existingFamily != null) return BadRequest("User is already in a family");
+
+            var update = Builders<Family>.Update.AddToSet("MemberUserIds", userId);
+
+            await _familyCollection.UpdateOneAsync(f => f.Id == familyId, update);
+
+            var updatedFamily = await _familyCollection.FirstOrDefaultAsync(f => f.Id == familyId);
+
+            var familyDto = new FamilyDto()
+            {
+                Id = familyId,
+                Name = updatedFamily.Name,
+                AdminUsers = [],
+                Members = []
+            };
+
+            foreach (var adminUserId in updatedFamily.MemberUserIds)
+            {
+                var person = await _userManager.FindByIdAsync(userId);
+
+                familyDto.Members.Add(person.UserName);
+            }
+
+            return familyDto;
         }
     }
 }
