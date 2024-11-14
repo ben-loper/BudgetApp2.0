@@ -57,7 +57,6 @@ namespace BackEnd.Controllers
 
             if (result.Succeeded)
             {
-                
                 return Ok();
             }
             else

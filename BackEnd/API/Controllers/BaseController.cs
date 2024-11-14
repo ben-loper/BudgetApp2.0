@@ -1,4 +1,5 @@
-﻿using Infrastructure.Models;
+﻿using BackEnd.Exceptions;
+using Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,14 @@ namespace BackEnd.Controllers
         protected readonly UserManager<ApplicationUser> _userManager = userManager;
         protected readonly SignInManager<ApplicationUser> _signInManager = signInManager;
 
+        protected string GetUserId() => _userManager.GetUserId(User) ?? throw new UserNotLoggedInException();
 
+        protected async Task<string> GetUsernameAsync()
+        {
+            var userId = GetUserId();
+            var user = await _userManager.FindByIdAsync(userId) ?? throw new UserNotLoggedInException();
+
+            return user.UserName ?? throw new UserNotLoggedInException();
+        }
     }
 }

@@ -2,11 +2,18 @@ using AspNetCore.Identity.Mongo;
 using Infrastructure.DatabaseConfig;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var mongoDbSettings = builder.Configuration.GetSection(nameof(MongoDbConfig)).Get<MongoDbConfig>()
         ?? throw new Exception("Could not find configuration for MongoDB");
+
+// Register MongoDB client
+builder.Services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongoDbSettings.ConnectionString));
+
+// Register MongoDB context
+builder.Services.AddScoped<MongoDbContext>(sp => new MongoDbContext(sp.GetRequiredService<IMongoClient>(), mongoDbSettings.DatabaseName));
 
 // Add services to the container.
 builder.Services.AddIdentityMongoDbProvider<ApplicationUser, ApplicationRole>(
