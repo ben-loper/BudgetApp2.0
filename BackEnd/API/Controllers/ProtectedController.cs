@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
+﻿using Infrastructure.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEnd.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
-    [Authorize]
-    public class ProtectedController : ControllerBase
+    public class ProtectedController : BaseController<ProtectedController>
     {
+        public ProtectedController(ILogger<ProtectedController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) 
+            : base(logger, userManager, signInManager)
+        {
+        }
+
         [HttpGet()]
         public ActionResult<string> Index()
         {

@@ -1,25 +1,19 @@
 using BackEnd.DTOs;
 using Infrastructure.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEnd.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class UserController : ControllerBase
+    public class UserController : BaseController<UserController>
     {
-        private readonly ILogger<UserController> _logger;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        
-        public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
-        {
-            _logger = logger;
-            _userManager = userManager;
-            _signInManager = signInManager;
+        public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) 
+            : base(logger, userManager, signInManager)
+        {            
         }
 
+        [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<ActionResult> Create(UserDto user)
         {
@@ -46,6 +40,7 @@ namespace BackEnd.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<ActionResult> Login(UserDto user)
         {
