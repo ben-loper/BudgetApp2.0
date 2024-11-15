@@ -1,4 +1,4 @@
-﻿using Infrastructure.Models;
+﻿using Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +6,7 @@ namespace BackEnd.Controllers
 {
     public class ProtectedController : BaseController<ProtectedController>
     {
-        public ProtectedController(ILogger<ProtectedController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) 
+        public ProtectedController(ILogger<ProtectedController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
             : base(logger, userManager, signInManager)
         {
         }

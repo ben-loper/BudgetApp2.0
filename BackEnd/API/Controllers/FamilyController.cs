@@ -9,18 +9,19 @@ using MongoDB.Driver;
 
 namespace BackEnd.Controllers
 {
+    // TODO: Breakout repo related functions into a repo class
     public class FamilyController : BaseController<FamilyController>
     {
         private readonly IMongoCollection<Family> _familyCollection;
 
-        public FamilyController(ILogger<FamilyController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, MongoDbContext context) 
+        public FamilyController(ILogger<FamilyController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, MongoDbContext context)
             : base(logger, userManager, signInManager)
         {
             _familyCollection = context.Families;
         }
 
         [HttpPost]
-        public async Task<ActionResult<FamilyDto>> CreateFamily(CreateFamilyRequestDto createFamilyDto) 
+        public async Task<ActionResult<FamilyDto>> CreateFamily(CreateFamilyRequestDto createFamilyDto)
         {
             if (createFamilyDto == null) return BadRequest();
 

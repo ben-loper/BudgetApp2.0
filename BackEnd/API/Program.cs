@@ -1,4 +1,5 @@
 using AspNetCore.Identity.Mongo;
+using Domain.Models;
 using Infrastructure.DatabaseConfig;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -27,19 +28,20 @@ builder.Services.AddIdentityMongoDbProvider<ApplicationUser, ApplicationRole>(
 
 // Setup middleware to return 401 if the user is not logged instead of attempting to redirect to login
 // Without this, it will return a 404
-builder.Services.ConfigureApplicationCookie(options => 
-{ 
-    options.Events = new CookieAuthenticationEvents { 
-        OnRedirectToLogin = ctx => 
-        { 
-            if (ctx.Response.StatusCode == 200) 
-            { 
-                ctx.Response.StatusCode = 401; 
-            } 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = ctx =>
+        {
+            if (ctx.Response.StatusCode == 200)
+            {
+                ctx.Response.StatusCode = 401;
+            }
 
-            return Task.CompletedTask; 
-        } 
-    }; 
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddControllers();

@@ -1,16 +1,17 @@
 using BackEnd.DTOs;
-using Infrastructure.Models;
+using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEnd.Controllers
 {
+    // TODO: Move repo related functions to repo class
     public class UserController : BaseController<UserController>
     {
-        public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager) 
+        public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
             : base(logger, userManager, signInManager)
-        {            
+        {
         }
 
         [AllowAnonymous]

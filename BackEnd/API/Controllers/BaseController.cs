@@ -1,12 +1,12 @@
 ﻿using BackEnd.Exceptions;
 using Domain.Models;
-using Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEnd.Controllers
 {
+    // TODO: Move the user related repo calls to a repo class
     [ApiController]
     [Route("[controller]")]
     [Authorize]
