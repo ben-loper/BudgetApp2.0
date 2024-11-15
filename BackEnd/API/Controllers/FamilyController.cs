@@ -1,6 +1,7 @@
 ﻿using AspNetCore.Identity.Mongo.Mongo;
 using BackEnd.DTOs.FamilyDtos;
 using BackEnd.Exceptions;
+using Domain.Models;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -86,6 +87,8 @@ namespace BackEnd.Controllers
             return Ok(familyDto);
         }
 
+        // TODO: Add ability to switch a user from admin to member
+        // TODO: Setup so the user must be an admin for the family to add users
         [HttpPut]
         public async Task<ActionResult<FamilyDto>> AddUserToFamily(string familyId, string username, bool isAdmin = false)
         {
@@ -110,7 +113,10 @@ namespace BackEnd.Controllers
 
             if (existingFamily != null) return BadRequest("User is already in a family");
 
-            var update = Builders<Family>.Update.AddToSet("MemberUserIds", userId);
+            UpdateDefinition<Family> update = null;
+
+            if (isAdmin) update = Builders<Family>.Update.AddToSet("AdminUserIds", userId);
+            else update = Builders<Family>.Update.AddToSet("MemberUserIds", userId);
 
             await _familyCollection.UpdateOneAsync(f => f.Id == familyId, update);
 
@@ -123,6 +129,13 @@ namespace BackEnd.Controllers
                 AdminUsers = [],
                 Members = []
             };
+
+            foreach (var adminUserId in updatedFamily.AdminUserIds)
+            {
+                var person = await _userManager.FindByIdAsync(userId);
+
+                familyDto.AdminUsers.Add(person.UserName);
+            }
 
             foreach (var adminUserId in updatedFamily.MemberUserIds)
             {

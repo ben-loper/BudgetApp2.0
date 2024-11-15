@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Domain.Models;
+using MongoDB.Driver;
 
 namespace Infrastructure.Models
 {

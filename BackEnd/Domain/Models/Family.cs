@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 
-namespace Infrastructure.Models
+namespace Domain.Models
 {
     public class Family
     {

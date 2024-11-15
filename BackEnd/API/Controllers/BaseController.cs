@@ -1,4 +1,5 @@
 ﻿using BackEnd.Exceptions;
+using Domain.Models;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
