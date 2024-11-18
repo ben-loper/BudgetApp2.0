@@ -1,17 +1,21 @@
 using BackEnd.DTOs;
-using Domain.Models;
+using Domain.Exceptions;
+using Domain.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using IdentitySignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+
 
 namespace BackEnd.Controllers
 {
-    // TODO: Move repo related functions to repo class
-    public class UserController : BaseController<UserController>
+    public class AuthController : BaseController<AuthController>
     {
-        public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
-            : base(logger, userManager, signInManager)
+        private readonly IAuthService _authService;
+
+        public AuthController(ILogger<AuthController> logger, IAuthService authService)
+            : base(logger)
         {
+            _authService = authService;
         }
 
         [AllowAnonymous]
@@ -23,13 +27,7 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            var appUser = new ApplicationUser
-            {
-                UserName = user.Name,
-                Email = user.Email
-            };
-
-            IdentityResult result = await _userManager.CreateAsync(appUser, user.Password);
+            var result = await _authService.CreateUserAsync(user.Username, user.Password);
 
             if (result.Succeeded)
             {
@@ -37,6 +35,8 @@ namespace BackEnd.Controllers
             }
             else
             {
+                _logger.LogError("Unable to create user due to the following errors: {errors}", string.Join(",", result.Errors));
+
                 return BadRequest("Choose an available username");
             }
         }
@@ -50,11 +50,18 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            var appUser = await _userManager.FindByEmailAsync(user.Email);
+            IdentitySignInResult result;
 
-            if (appUser == null) return BadRequest("Email or password is incorrect");
+            try
+            {
+                result = await _authService.SignInUserAsync(user.Username, user.Password);
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError("Unable to sign in user - {ex}", ex);
+                return BadRequest("Email or password is incorrect");
+            }
 
-            var result = await _signInManager.PasswordSignInAsync(appUser, user.Password, false, false);
 
             if (result.Succeeded)
             {
@@ -69,7 +76,7 @@ namespace BackEnd.Controllers
         [HttpPost("Logout")]
         public async Task<ActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
+            await _authService.SignOutUserAsync();
 
             return Ok();
         }

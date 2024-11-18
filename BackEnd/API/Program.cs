@@ -1,9 +1,14 @@
 using AspNetCore.Identity.Mongo;
 using Domain.Models;
+using Domain.Repositories;
+using Domain.Services;
 using Infrastructure.DatabaseConfig;
 using Infrastructure.Models;
+using Infrastructure.Repositories;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using MongoDB.Driver;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +31,12 @@ builder.Services.AddIdentityMongoDbProvider<ApplicationUser, ApplicationRole>(
     }
 );
 
+builder.Services.AddScoped<IFamilyRepository, FamilyRepository>();
+
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IFamilyService, FamilyService>();
+
 // Setup middleware to return 401 if the user is not logged instead of attempting to redirect to login
 // Without this, it will return a 404
 builder.Services.ConfigureApplicationCookie(options =>
@@ -44,9 +55,14 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddControllers()
+    .AddJsonOptions(opt =>
+    {
+        opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
+    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();

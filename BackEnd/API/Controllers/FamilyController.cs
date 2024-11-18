@@ -1,23 +1,22 @@
-﻿using AspNetCore.Identity.Mongo.Mongo;
-using BackEnd.DTOs.FamilyDtos;
-using BackEnd.Exceptions;
+﻿using BackEnd.DTOs.FamilyDtos;
+using BackEnd.Utilities;
+using Domain.Exceptions;
 using Domain.Models;
-using Infrastructure.Models;
-using Microsoft.AspNetCore.Identity;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
 
 namespace BackEnd.Controllers
 {
-    // TODO: Breakout repo related functions into a repo class
     public class FamilyController : BaseController<FamilyController>
     {
-        private readonly IMongoCollection<Family> _familyCollection;
+        private readonly IFamilyService _familyService;
+        private readonly IAuthService _authService;
 
-        public FamilyController(ILogger<FamilyController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, MongoDbContext context)
-            : base(logger, userManager, signInManager)
+        public FamilyController(ILogger<FamilyController> logger, IFamilyService familyService, IAuthService authService)
+            : base(logger)
         {
-            _familyCollection = context.Families;
+            _familyService = familyService;
+            _authService = authService;
         }
 
         [HttpPost]
@@ -25,30 +24,41 @@ namespace BackEnd.Controllers
         {
             if (createFamilyDto == null) return BadRequest();
 
-            var existingFamily = await _familyCollection.FirstOrDefaultAsync(f => f.AdminUserIds.Contains(GetUserId())
-                                                                || f.MemberUserIds.Contains(GetUserId())
-                                                            );
-
-            if (existingFamily != null) return BadRequest("User is already in a family");
-
             var family = new Family()
             {
                 Name = createFamilyDto.Name,
-                AdminUserIds = new List<string>()
-                {
-                    GetUserId()
-                },
-                MemberUserIds = new List<string>()
+                AdminUserIds = [],
+                MemberUserIds = []
             };
 
-            await _familyCollection.InsertOneAsync(family);
+            try
+            {
+                family = await _familyService.CreateFamilyAsync(family, User.GetUserId());
+            }
+            catch (UserAlreadyInFamilyException)
+            {
+                _logger.LogError("Unable to create Family due to user already being in a family");
+
+                return BadRequest("Unable to create Family. User is already in a family");
+
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("Unable to create Family: {ex}", ex);
+                return BadRequest();
+            }
+
+            if (family == null || family.Id == null)
+            {
+                return BadRequest();
+            }
 
             var familyDto = new FamilyDto()
             {
                 Id = family.Id.ToString(),
-                Name = createFamilyDto.Name,
-                AdminUsers = [await GetUsernameAsync()],
-                Members = new List<string>()
+                Name = family.Name,
+                AdminUsers = family.AdminUserIds,
+                Members = family.MemberUserIds
             };
 
             return familyDto;
@@ -57,11 +67,9 @@ namespace BackEnd.Controllers
         [HttpGet]
         public async Task<ActionResult<FamilyDto>> GetFamily()
         {
-            var family = await _familyCollection.FirstOrDefaultAsync(f => f.AdminUserIds.Contains(GetUserId())
-                                                                || f.MemberUserIds.Contains(GetUserId())
-                                                            );
+            var family = await _familyService.GetFamilyAsync(User.GetUserId());
 
-            if (family == null) return NotFound();
+            if (family == null || family.Id == null) return NotFound();
 
             var familyDto = new FamilyDto()
             {
@@ -73,59 +81,74 @@ namespace BackEnd.Controllers
 
             foreach (var userId in family.AdminUserIds)
             {
-                var person = await _userManager.FindByIdAsync(userId);
+                var username = await _authService.GetUsernameAsync(userId);
 
-                familyDto.AdminUsers.Add(person.UserName);
+                familyDto.AdminUsers.Add(username);
             }
 
             foreach (var userId in family.MemberUserIds)
             {
-                var person = await _userManager.FindByIdAsync(userId);
+                var username = await _authService.GetUsernameAsync(userId);
 
-                familyDto.Members.Add(person.UserName);
+                familyDto.Members.Add(username);
             }
 
             return Ok(familyDto);
         }
 
         // TODO: Add ability to switch a user from admin to member
-        // TODO: Setup so the user must be an admin for the family to add users
-        [HttpPut]
-        public async Task<ActionResult<FamilyDto>> AddUserToFamily(string familyId, string username, bool isAdmin = false)
+        // TODO: Setup so the user must be an admin for the family to add/remove users
+        //TODO: Can I make this more RESTful?
+        [HttpPut("AddUserToFamily")]
+        public async Task<ActionResult<FamilyDto>> AddUserToFamily(AddUserToFamilyRequestDto request)
         {
             string? userId = null;
 
             try
             {
-                userId = await GetUserIdByUsername(username);
+                userId = await _authService.GetUserIdAsync(request.UserName);
             }
             catch (UserDoesNotExistException)
             {
                 return BadRequest("User does not exist");
             }
 
-            var family = await _familyCollection.FirstOrDefaultAsync(family => family.Id == familyId);
+            Family family;
 
-            if (family == null) return NotFound("No family exists with the given Id");
+            try
+            {
+                family = await _familyService.GetFamilyAsync(User.GetUserId());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Exception while trying to retrieve family for user: {ex}", ex);
 
-            var existingFamily = await _familyCollection.FirstOrDefaultAsync(f => f.AdminUserIds.Contains(userId)
-                                                                || f.MemberUserIds.Contains(userId)
-                                                            );
+                return NotFound();
+            }
+            
 
-            if (existingFamily != null) return BadRequest("User is already in a family");
+            if (family == null || family.Id == null)
+            {
+                return NotFound("User is not part of a family");
+            }
 
-            UpdateDefinition<Family> update = null;
+            Family updatedFamily;
 
-            if (isAdmin) update = Builders<Family>.Update.AddToSet("AdminUserIds", userId);
-            else update = Builders<Family>.Update.AddToSet("MemberUserIds", userId);
-
-            await _familyCollection.UpdateOneAsync(f => f.Id == familyId, update);
-
-            var updatedFamily = await _familyCollection.FirstOrDefaultAsync(f => f.Id == familyId);
+            try
+            {
+                updatedFamily = await _familyService.AddUserToFamilyAsync(family.Id, userId, request.Role);
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError("Exception occurred while trying to add user to family: {ex}", ex);
+                
+                // TODO: Need to handle this more elegantly
+                return BadRequest();
+            }
 
             var familyDto = new FamilyDto()
             {
-                Id = familyId,
+                Id = family.Id,
                 Name = updatedFamily.Name,
                 AdminUsers = [],
                 Members = []
@@ -133,16 +156,90 @@ namespace BackEnd.Controllers
 
             foreach (var adminUserId in updatedFamily.AdminUserIds)
             {
-                var person = await _userManager.FindByIdAsync(userId);
+                var id = await _authService.GetUsernameAsync(adminUserId);
 
-                familyDto.AdminUsers.Add(person.UserName);
+                familyDto.AdminUsers.Add(id);
             }
 
             foreach (var adminUserId in updatedFamily.MemberUserIds)
             {
-                var person = await _userManager.FindByIdAsync(userId);
+                var id = await _authService.GetUsernameAsync(adminUserId);
 
-                familyDto.Members.Add(person.UserName);
+                familyDto.Members.Add(id);
+            }
+
+            return familyDto;
+        }
+
+        //TODO: Can I make this more RESTful?
+        // TODO: Add Authorization to ensure user is an admin for the family
+        [HttpPut("RemoveUserFromFamily")]
+        public async Task<ActionResult<FamilyDto>> RemoveUserFromFamily(RemoveUserFromFamilyRequestDto request)
+        {
+            string? userId = null;
+
+            try
+            {
+                userId = await _authService.GetUserIdAsync(request.UserName);
+            }
+            catch (UserDoesNotExistException)
+            {
+                return BadRequest("User does not exist");
+            }
+
+            Family family;
+
+            try
+            {
+                family = await _familyService.GetFamilyAsync(User.GetUserId());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Exception while trying to retrieve family for user: {ex}", ex);
+
+                return NotFound();
+            }
+
+
+            if (family == null || family.Id == null)
+            {
+                return NotFound("User is not part of a family");
+            }
+
+            Family updatedFamily;
+
+            try
+            {
+                updatedFamily = await _familyService.RemoveUserFromFamilyAsync(family.Id, userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Exception occurred while trying to add user to family: {ex}", ex);
+
+                // TODO: Need to handle this more elegantly
+                return BadRequest();
+            }
+
+            var familyDto = new FamilyDto()
+            {
+                Id = family.Id,
+                Name = updatedFamily.Name,
+                AdminUsers = [],
+                Members = []
+            };
+
+            foreach (var adminUserId in updatedFamily.AdminUserIds)
+            {
+                var id = await _authService.GetUsernameAsync(adminUserId);
+
+                familyDto.AdminUsers.Add(id);
+            }
+
+            foreach (var adminUserId in updatedFamily.MemberUserIds)
+            {
+                var id = await _authService.GetUsernameAsync(adminUserId);
+
+                familyDto.Members.Add(id);
             }
 
             return familyDto;
