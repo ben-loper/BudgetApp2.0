@@ -1,17 +1,21 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Domain.Models
 {
     public class Budget
     {
+        public Budget()
+        {
+            Id = ObjectId.GenerateNewId().ToString();
+        }
+
         [BsonId]
-        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
+        [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }
 
+        public required List<MonthlyBill> MonthlyBills { get; set; } = [];
+
+        public required List<BudgetCategory> BudgetCategories { get; set; } = [];
     }
 }

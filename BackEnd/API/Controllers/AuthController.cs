@@ -1,4 +1,4 @@
-using BackEnd.DTOs;
+using BackEnd.DTOs.UserDtos;
 using Domain.Exceptions;
 using Domain.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +20,7 @@ namespace BackEnd.Controllers
 
         [AllowAnonymous]
         [HttpPost("Register")]
-        public async Task<ActionResult> Create(UserDto user)
+        public async Task<ActionResult> Create(CreateUserRequestDto user)
         {
             if (!ModelState.IsValid)
             {
@@ -43,7 +43,7 @@ namespace BackEnd.Controllers
 
         [AllowAnonymous]
         [HttpPost("Login")]
-        public async Task<ActionResult> Login(UserDto user)
+        public async Task<ActionResult> Login(CreateUserRequestDto user)
         {
             if (!ModelState.IsValid)
             {

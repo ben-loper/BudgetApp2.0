@@ -36,6 +36,7 @@ builder.Services.AddScoped<IFamilyRepository, FamilyRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFamilyService, FamilyService>();
+builder.Services.AddScoped<IBudgetService, BudgetService>();
 
 // Setup middleware to return 401 if the user is not logged instead of attempting to redirect to login
 // Without this, it will return a 404

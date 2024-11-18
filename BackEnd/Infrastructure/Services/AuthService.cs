@@ -30,13 +30,13 @@ namespace Infrastructure.Services
             return await _userManager.CreateAsync(appUser, password);
         }
 
-        public async Task<string> GetUsernameAsync(string userId)
+        public async Task<ApplicationUser> GetUserAsync(string userId)
         {
             var appUser = await _userManager.FindByIdAsync(userId);
 
             if (appUser == null || appUser.UserName == null) throw new UserDoesNotExistException();
 
-            return appUser.UserName;
+            return appUser;
         }
 
         public async Task<string> GetUserIdAsync(string userName)
@@ -60,6 +60,11 @@ namespace Infrastructure.Services
         public async Task SignOutUserAsync()
         {
             await _signInManager.SignOutAsync();
+        }
+
+        public async Task<IdentityResult> UpdateUserAsync(ApplicationUser user)
+        {
+            return await _userManager.UpdateAsync(user);
         }
     }
 }

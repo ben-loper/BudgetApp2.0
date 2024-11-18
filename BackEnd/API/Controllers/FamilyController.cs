@@ -1,4 +1,5 @@
-﻿using BackEnd.DTOs.FamilyDtos;
+﻿using BackEnd.DTOs.BudgetDtos;
+using BackEnd.DTOs.FamilyDtos;
 using BackEnd.Utilities;
 using Domain.Exceptions;
 using Domain.Models;
@@ -28,7 +29,12 @@ namespace BackEnd.Controllers
             {
                 Name = createFamilyDto.Name,
                 AdminUserIds = [],
-                MemberUserIds = []
+                MemberUserIds = [],
+                Budget = new Budget()
+                {
+                    MonthlyBills = [],
+                    BudgetCategories = []
+                }
             };
 
             try
@@ -79,18 +85,34 @@ namespace BackEnd.Controllers
                 Members = []
             };
 
+            BudgetDto budget = null;
+
+            if (family.Budget != null && family.Budget.Id != null)
+            {
+                budget = new BudgetDto()
+                {
+                    Id = family.Budget.Id,
+                    MonthlyBills = [],
+                    BudgetCategories = []
+                };
+
+                familyDto.Budget = budget;
+            }
+
             foreach (var userId in family.AdminUserIds)
             {
-                var username = await _authService.GetUsernameAsync(userId);
+                var user = await _authService.GetUserAsync(userId);
+                familyDto.AdminUsers.Add(user.GetUsername());
 
-                familyDto.AdminUsers.Add(username);
+                if (budget != null) budget.PayThisMonth += user.TotalPayThisMonth();
             }
 
             foreach (var userId in family.MemberUserIds)
             {
-                var username = await _authService.GetUsernameAsync(userId);
+                var user = await _authService.GetUserAsync(userId);
+                familyDto.Members.Add(user.GetUsername());
 
-                familyDto.Members.Add(username);
+                if (budget != null) budget.PayThisMonth += user.TotalPayThisMonth();
             }
 
             return Ok(familyDto);
@@ -156,16 +178,16 @@ namespace BackEnd.Controllers
 
             foreach (var adminUserId in updatedFamily.AdminUserIds)
             {
-                var id = await _authService.GetUsernameAsync(adminUserId);
+                var user = await _authService.GetUserAsync(adminUserId);
 
-                familyDto.AdminUsers.Add(id);
+                familyDto.AdminUsers.Add(user.GetUsername());
             }
 
             foreach (var adminUserId in updatedFamily.MemberUserIds)
             {
-                var id = await _authService.GetUsernameAsync(adminUserId);
+                var user = await _authService.GetUserAsync(adminUserId);
 
-                familyDto.Members.Add(id);
+                familyDto.Members.Add(user.GetUsername());
             }
 
             return familyDto;
@@ -230,16 +252,16 @@ namespace BackEnd.Controllers
 
             foreach (var adminUserId in updatedFamily.AdminUserIds)
             {
-                var id = await _authService.GetUsernameAsync(adminUserId);
+                var user = await _authService.GetUserAsync(adminUserId);
 
-                familyDto.AdminUsers.Add(id);
+                familyDto.AdminUsers.Add(user.GetUsername());
             }
 
             foreach (var adminUserId in updatedFamily.MemberUserIds)
             {
-                var id = await _authService.GetUsernameAsync(adminUserId);
+                var user = await _authService.GetUserAsync(adminUserId);
 
-                familyDto.Members.Add(id);
+                familyDto.Members.Add(user.GetUsername());
             }
 
             return familyDto;

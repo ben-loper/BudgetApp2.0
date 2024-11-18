@@ -16,20 +16,10 @@ namespace Infrastructure.Repositories
             _familyCollection = context.Families;
         }
 
-        public Task<Family> AddUserToFamilyAsync(string username, FamilyRole role)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<Family> CreateFamilyAsync(Family family)
         {
             await _familyCollection.InsertOneAsync(family);
             return family;
-        }
-
-        public Task<Family> RemoveUserFromFamilyAsync(string username)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<Family> GetFamilyForUserIdAsync(string userId)

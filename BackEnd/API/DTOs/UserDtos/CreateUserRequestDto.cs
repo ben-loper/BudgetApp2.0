@@ -1,8 +1,6 @@
-﻿
-
-namespace BackEnd.DTOs
+﻿namespace BackEnd.DTOs.UserDtos
 {
-    public class UserDto
+    public class CreateUserRequestDto
     {
         public required string Username { get; set; }
 

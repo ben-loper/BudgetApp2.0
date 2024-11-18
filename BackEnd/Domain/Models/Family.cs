@@ -10,5 +10,6 @@ namespace Domain.Models
         public required string Name { get; set; }
         public List<string> AdminUserIds { get; set; } = [];
         public List<string> MemberUserIds { get; set; } = [];
+        public Budget? Budget { get; set; }
     }
 }

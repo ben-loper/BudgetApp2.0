@@ -79,5 +79,10 @@ namespace Infrastructure.Services
 
             return await _familyRepository.UpdateFamilyAsync(family);
         }
+
+        public async Task<Family> GetFamilyByIdAsync(string familyId)
+        {
+            return await _familyRepository.GetFamilyByIdAsync(familyId);
+        }
     }
 }

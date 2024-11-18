@@ -15,5 +15,6 @@ namespace Infrastructure.Models
         public IMongoCollection<ApplicationUser> Users => _database.GetCollection<ApplicationUser>("Users");
         public IMongoCollection<ApplicationRole> Roles => _database.GetCollection<ApplicationRole>("Roles");
         public IMongoCollection<Family> Families => _database.GetCollection<Family>("Families");
+        public IMongoCollection<Budget> Budgets => _database.GetCollection<Budget>("Budgets");
     }
 }
