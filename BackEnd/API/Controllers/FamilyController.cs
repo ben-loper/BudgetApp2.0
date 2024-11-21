@@ -81,20 +81,6 @@ namespace BackEnd.Controllers
 
             var familyDto = _mapper.Map<FamilyDto>(family);
 
-            //BudgetDto? budget = null;
-
-            //if (family.Budget != null && family.Budget.Id != null)
-            //{
-            //    budget = new BudgetDto()
-            //    {
-            //        Id = family.Budget.Id,
-            //        MonthlyBills = [],
-            //        BudgetCategories = []
-            //    };
-
-            //    familyDto.Budget = budget;
-            //}
-
             //TODO: Abstract this to a service or method
             foreach (var userId in family.AdminUserIds)
             {
@@ -165,14 +151,6 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            //var familyDto = new FamilyDto()
-            //{
-            //    Id = family.Id,
-            //    Name = updatedFamily.Name,
-            //    AdminUsers = [],
-            //    Members = []
-            //};
-
             var familyDto = _mapper.Map<FamilyDto>(updatedFamily);
 
             foreach (var adminUserId in updatedFamily.AdminUserIds)
@@ -240,14 +218,6 @@ namespace BackEnd.Controllers
                 // TODO: Need to handle this more elegantly
                 return BadRequest();
             }
-
-            //var familyDto = new FamilyDto()
-            //{
-            //    Id = family.Id,
-            //    Name = updatedFamily.Name,
-            //    AdminUsers = [],
-            //    Members = []
-            //};
 
             var familyDto = _mapper.Map<FamilyDto>(updatedFamily);
 
