@@ -1,5 +1,7 @@
-﻿using BackEnd.DTOs.BudgetDtos;
+﻿using AutoMapper;
+using BackEnd.DTOs.BudgetDtos;
 using BackEnd.DTOs.FamilyDtos;
+using BackEnd.DTOs.FamilyDtos.Requests;
 using BackEnd.Utilities;
 using Domain.Exceptions;
 using Domain.Models;
@@ -13,8 +15,7 @@ namespace BackEnd.Controllers
         private readonly IFamilyService _familyService;
         private readonly IAuthService _authService;
 
-        public FamilyController(ILogger<FamilyController> logger, IFamilyService familyService, IAuthService authService)
-            : base(logger)
+        public FamilyController(ILogger<FamilyController> logger, IFamilyService familyService, IAuthService authService, IMapper mapper) : base(logger, mapper)
         {
             _familyService = familyService;
             _authService = authService;
@@ -70,6 +71,7 @@ namespace BackEnd.Controllers
             return familyDto;
         }
 
+        // TODO: May make more sense to break out into a budget service
         [HttpGet]
         public async Task<ActionResult<FamilyDto>> GetFamily()
         {
@@ -77,34 +79,29 @@ namespace BackEnd.Controllers
 
             if (family == null || family.Id == null) return NotFound();
 
-            var familyDto = new FamilyDto()
-            {
-                Id = family.Id,
-                Name = family.Name,
-                AdminUsers = [],
-                Members = []
-            };
+            var familyDto = _mapper.Map<FamilyDto>(family);
 
-            BudgetDto budget = null;
+            //BudgetDto? budget = null;
 
-            if (family.Budget != null && family.Budget.Id != null)
-            {
-                budget = new BudgetDto()
-                {
-                    Id = family.Budget.Id,
-                    MonthlyBills = [],
-                    BudgetCategories = []
-                };
+            //if (family.Budget != null && family.Budget.Id != null)
+            //{
+            //    budget = new BudgetDto()
+            //    {
+            //        Id = family.Budget.Id,
+            //        MonthlyBills = [],
+            //        BudgetCategories = []
+            //    };
 
-                familyDto.Budget = budget;
-            }
+            //    familyDto.Budget = budget;
+            //}
 
+            //TODO: Abstract this to a service or method
             foreach (var userId in family.AdminUserIds)
             {
                 var user = await _authService.GetUserAsync(userId);
                 familyDto.AdminUsers.Add(user.GetUsername());
 
-                if (budget != null) budget.PayThisMonth += user.TotalPayThisMonth();
+                if (familyDto.Budget != null) familyDto.Budget.PayThisMonth += user.TotalPayThisMonth();
             }
 
             foreach (var userId in family.MemberUserIds)
@@ -112,7 +109,7 @@ namespace BackEnd.Controllers
                 var user = await _authService.GetUserAsync(userId);
                 familyDto.Members.Add(user.GetUsername());
 
-                if (budget != null) budget.PayThisMonth += user.TotalPayThisMonth();
+                if (familyDto.Budget != null) familyDto.Budget.PayThisMonth += user.TotalPayThisMonth();
             }
 
             return Ok(familyDto);
@@ -168,13 +165,15 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            var familyDto = new FamilyDto()
-            {
-                Id = family.Id,
-                Name = updatedFamily.Name,
-                AdminUsers = [],
-                Members = []
-            };
+            //var familyDto = new FamilyDto()
+            //{
+            //    Id = family.Id,
+            //    Name = updatedFamily.Name,
+            //    AdminUsers = [],
+            //    Members = []
+            //};
+
+            var familyDto = _mapper.Map<FamilyDto>(updatedFamily);
 
             foreach (var adminUserId in updatedFamily.AdminUserIds)
             {
@@ -242,13 +241,15 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            var familyDto = new FamilyDto()
-            {
-                Id = family.Id,
-                Name = updatedFamily.Name,
-                AdminUsers = [],
-                Members = []
-            };
+            //var familyDto = new FamilyDto()
+            //{
+            //    Id = family.Id,
+            //    Name = updatedFamily.Name,
+            //    AdminUsers = [],
+            //    Members = []
+            //};
+
+            var familyDto = _mapper.Map<FamilyDto>(updatedFamily);
 
             foreach (var adminUserId in updatedFamily.AdminUserIds)
             {

@@ -1,6 +1,6 @@
 ﻿using Domain.Enums;
 
-namespace BackEnd.DTOs.FamilyDtos
+namespace BackEnd.DTOs.FamilyDtos.Requests
 {
     public class AddUserToFamilyRequestDto
     {

@@ -1,4 +1,5 @@
 using AspNetCore.Identity.Mongo;
+using BackEnd.Profiles;
 using Domain.Models;
 using Domain.Repositories;
 using Domain.Services;
@@ -14,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 var mongoDbSettings = builder.Configuration.GetSection(nameof(MongoDbConfig)).Get<MongoDbConfig>()
         ?? throw new Exception("Could not find configuration for MongoDB");
+
+builder.Services.AddAutoMapper(typeof(MainProfile));
 
 // Register MongoDB client
 builder.Services.AddSingleton<IMongoClient, MongoClient>(sp => new MongoClient(mongoDbSettings.ConnectionString));

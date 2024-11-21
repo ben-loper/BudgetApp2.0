@@ -1,4 +1,5 @@
-using BackEnd.DTOs.UserDtos;
+using AutoMapper;
+using BackEnd.DTOs.UserDtos.Requests;
 using Domain.Exceptions;
 using Domain.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -12,8 +13,7 @@ namespace BackEnd.Controllers
     {
         private readonly IAuthService _authService;
 
-        public AuthController(ILogger<AuthController> logger, IAuthService authService)
-            : base(logger)
+        public AuthController(ILogger<AuthController> logger, IAuthService authService, IMapper mapper) : base(logger, mapper)
         {
             _authService = authService;
         }

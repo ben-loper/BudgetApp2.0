@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEnd.Controllers
 {
-    // TODO: Move the user related repo calls to a repo class
     [ApiController]
     [Route("[controller]")]
     [Authorize]
-    public class BaseController<T>(ILogger<T> logger) : ControllerBase
+    public class BaseController<T>(ILogger<T> logger, IMapper mapper) : ControllerBase
     {
         protected readonly ILogger<T> _logger = logger;
+        protected readonly IMapper _mapper = mapper;
     }
 }

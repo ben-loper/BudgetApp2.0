@@ -1,4 +1,5 @@
-﻿using BackEnd.DTOs.UserDtos;
+﻿using AutoMapper;
+using BackEnd.DTOs.UserDtos.Requests;
 using BackEnd.Utilities;
 using Domain.Models;
 using Domain.Services;
@@ -10,8 +11,7 @@ namespace BackEnd.Controllers
     {
         private readonly IAuthService _authService;
 
-        public UserController(ILogger<UserController> logger, IAuthService authService)
-            : base(logger) 
+        public UserController(ILogger<UserController> logger, IAuthService authService, IMapper mapper) : base(logger, mapper)
         {
             _authService = authService;
         }
@@ -24,7 +24,7 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            string userId = null;
+            string? userId = null;
 
             //TODO: Handle it better
             try
@@ -33,10 +33,13 @@ namespace BackEnd.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError("Unexpected Error: {ex}", ex);
                 BadRequest();
             }
 
-            ApplicationUser user = null;
+            if (userId == null) return BadRequest();
+
+            ApplicationUser? user = null;
 
             try
             {
@@ -44,8 +47,11 @@ namespace BackEnd.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError("Unexpected Error: {ex}", ex);
                 BadRequest();
             }
+
+            if(user == null) return BadRequest();
 
             user.PreviousPayDate = request.PreviousPayDate;
             user.BiWeeklySalary = request.BiWeeklySalary;

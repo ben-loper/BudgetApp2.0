@@ -1,4 +1,4 @@
-﻿namespace BackEnd.DTOs.FamilyDtos
+﻿namespace BackEnd.DTOs.FamilyDtos.Requests
 {
     public class CreateFamilyRequestDto
     {
