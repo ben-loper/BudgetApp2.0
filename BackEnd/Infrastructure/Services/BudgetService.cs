@@ -2,6 +2,7 @@
 using Domain.Models;
 using Domain.Repositories;
 using Domain.Services;
+using MongoDB.Bson;
 
 namespace Infrastructure.Services
 {
@@ -27,9 +28,17 @@ namespace Infrastructure.Services
             return await _familyRepo.UpdateFamilyAsync(family);
         }
 
-        public Task<Family> CreateCategoryForBudgetAsync(string budgetId, BudgetCategory category)
+        public async Task<Family> CreateCategoryForBudgetAsync(string familyId, BudgetCategory category)
         {
-            throw new NotImplementedException();
+            var family = await _familyRepo.GetFamilyByIdAsync(familyId);
+
+            if (family == null || family.Id == null) throw new FamilyCouldNotBeFoundException();
+
+            if (family.Budget == null) throw new BudgetDoesNotExistForFamilyException();
+
+            family.Budget.BudgetCategories.Add(category);
+
+            return await _familyRepo.UpdateFamilyAsync(family);
         }
 
         public Task<Family> DeleteCategoryAsync(string categoryId)

@@ -5,6 +5,11 @@ namespace Domain.Models
 {
     public class Transaction
     {
+        public Transaction()
+        {
+            Id = ObjectId.GenerateNewId().ToString();
+        }
+
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }

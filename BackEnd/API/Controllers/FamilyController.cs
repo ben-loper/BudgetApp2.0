@@ -13,12 +13,10 @@ namespace BackEnd.Controllers
     public class FamilyController : BaseController<FamilyController>
     {
         private readonly IFamilyService _familyService;
-        private readonly IAuthService _authService;
 
-        public FamilyController(ILogger<FamilyController> logger, IFamilyService familyService, IAuthService authService, IMapper mapper) : base(logger, mapper)
+        public FamilyController(ILogger<FamilyController> logger, IFamilyService familyService, IAuthService authService, IMapper mapper) : base(logger, mapper, authService)
         {
             _familyService = familyService;
-            _authService = authService;
         }
 
         [HttpPost]
@@ -60,13 +58,15 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            var familyDto = new FamilyDto()
+            var familyDto = _mapper.Map<FamilyDto>(family);
+
+            foreach (var userId in family.AdminUserIds)
             {
-                Id = family.Id.ToString(),
-                Name = family.Name,
-                AdminUsers = family.AdminUserIds,
-                Members = family.MemberUserIds
-            };
+                var user = await _authService.GetUserAsync(userId);
+                familyDto.AdminUsers.Add(user.GetUsername());
+
+                if (familyDto.Budget != null) familyDto.Budget.PayThisMonth += user.TotalPayThisMonth();
+            }
 
             return familyDto;
         }
@@ -75,7 +75,7 @@ namespace BackEnd.Controllers
         [HttpGet]
         public async Task<ActionResult<FamilyDto>> GetFamily()
         {
-            var family = await _familyService.GetFamilyAsync(User.GetUserId());
+            var family = await _familyService.GetFamilyByUserIdAsync(User.GetUserId());
 
             if (family == null || family.Id == null) return NotFound();
 
@@ -122,7 +122,7 @@ namespace BackEnd.Controllers
 
             try
             {
-                family = await _familyService.GetFamilyAsync(User.GetUserId());
+                family = await _familyService.GetFamilyByUserIdAsync(User.GetUserId());
             }
             catch (Exception ex)
             {
@@ -190,7 +190,7 @@ namespace BackEnd.Controllers
 
             try
             {
-                family = await _familyService.GetFamilyAsync(User.GetUserId());
+                family = await _familyService.GetFamilyByUserIdAsync(User.GetUserId());
             }
             catch (Exception ex)
             {

@@ -26,7 +26,7 @@ namespace Infrastructure.Services
             return await _familyRepository.CreateFamilyAsync(family);
         }
 
-        public async Task<Family> GetFamilyAsync(string userId)
+        public async Task<Family> GetFamilyByUserIdAsync(string userId)
         {
             return await _familyRepository.GetFamilyForUserIdAsync(userId);
         }

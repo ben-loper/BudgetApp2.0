@@ -5,6 +5,11 @@ namespace Domain.Models
 {
     public class BudgetCategory
     {
+        public BudgetCategory()
+        {
+            Id = ObjectId.GenerateNewId().ToString();
+        }
+
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? Id { get; set; }

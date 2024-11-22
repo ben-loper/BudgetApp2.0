@@ -9,11 +9,9 @@ namespace BackEnd.Controllers
 {
     public class UserController : BaseController<UserController>
     {
-        private readonly IAuthService _authService;
 
-        public UserController(ILogger<UserController> logger, IAuthService authService, IMapper mapper) : base(logger, mapper)
+        public UserController(ILogger<UserController> logger, IAuthService authService, IMapper mapper) : base(logger, mapper, authService)
         {
-            _authService = authService;
         }
 
         [HttpPut]

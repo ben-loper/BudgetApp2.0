@@ -11,11 +11,8 @@ namespace BackEnd.Controllers
 {
     public class AuthController : BaseController<AuthController>
     {
-        private readonly IAuthService _authService;
-
-        public AuthController(ILogger<AuthController> logger, IAuthService authService, IMapper mapper) : base(logger, mapper)
+        public AuthController(ILogger<AuthController> logger, IAuthService authService, IMapper mapper) : base(logger, mapper, authService)
         {
-            _authService = authService;
         }
 
         [AllowAnonymous]

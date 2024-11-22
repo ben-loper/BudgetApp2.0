@@ -10,7 +10,7 @@ namespace Domain.Services
     public interface IBudgetService
     {
         Task<Family> CreateBudgetForFamilyAsync(string familyId, Budget budget);
-        Task<Family> CreateCategoryForBudgetAsync(string budgetId, BudgetCategory category);
+        Task<Family> CreateCategoryForBudgetAsync(string familyId, BudgetCategory category);
         Task<Family> UpdateCategoryAsync(string categoryId, BudgetCategory category);
         Task<Family> DeleteCategoryAsync(string categoryId);
     }
