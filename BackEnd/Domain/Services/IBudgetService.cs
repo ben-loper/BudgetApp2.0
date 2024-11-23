@@ -13,5 +13,6 @@ namespace Domain.Services
         Task<Family> CreateCategoryForBudgetAsync(string familyId, BudgetCategory category);
         Task<Family> UpdateCategoryAsync(string categoryId, BudgetCategory category);
         Task<Family> DeleteCategoryAsync(string categoryId);
+        Task<Family> CreateMonthlyBillAsync(string familyId, MonthlyBill monthlyBill);
     }
 }

@@ -50,5 +50,35 @@ namespace BackEnd.Controllers
             
             return Ok(response);
         }
+
+        [HttpPost("MonthlyBill")]
+        public async Task<ActionResult<FamilyDto>> AddMonthlyBill(MonthlyBillDto request)
+        {
+            if (request == null) return BadRequest();
+
+            var family = await _familyService.GetFamilyByUserIdAsync(User.GetUserId());
+
+            if (family == null || family.Id == null)
+            {
+                _logger.LogError("User is not assigned to a family or no budget exists for family");
+                return BadRequest();
+            }
+
+            var monthlyBill = _mapper.Map<MonthlyBill>(request);
+
+            try
+            {
+                family = await _budgetService.CreateMonthlyBillAsync(family.Id, monthlyBill);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Unexpected error while attempting to save category for budget - {ex}", ex);
+                return BadRequest();
+            }
+
+            var response = _mapper.Map<FamilyDto>(family);
+
+            return Ok(response);
+        }
     }
 }

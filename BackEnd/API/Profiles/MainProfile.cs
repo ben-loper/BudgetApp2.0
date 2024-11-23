@@ -16,9 +16,21 @@ namespace BackEnd.Profiles
                 .ForMember(f => f.AdminUserIds, opt => opt.Ignore())
                 .ReverseMap();
 
-            CreateMap<BudgetDto, Budget>().ReverseMap();
-            CreateMap<MonthlyBillDto, MonthlyBill>().ReverseMap();
-            CreateMap<TransactionDto, Transaction>().ReverseMap();
+            // Instantiating the object calls the constructor which generates an Id. But then Automapper
+            // maps the Id value from the DTO to entity object. 
+            // This overwrites the generated Id. This keeps Automapper from overwriting it
+            CreateMap<BudgetDto, Budget>()
+                .ForMember(dest => dest.Id, opt => opt.Condition(src => src.Id != null))
+                .ReverseMap();
+
+            CreateMap<MonthlyBillDto, MonthlyBill>()
+                .ForMember(dest => dest.Id, opt => opt.Condition(src => src.Id != null))
+                .ReverseMap();
+
+            CreateMap<TransactionDto, Transaction>()
+                .ForMember(dest => dest.Id, opt => opt.Condition(src => src.Id != null))
+                .ReverseMap();
+
             CreateMap<BudgetCategoryDto, BudgetCategory>()
                 .ForMember(dest => dest.Id, opt => opt.Condition(src => src.Id != null))
                 .ReverseMap();
