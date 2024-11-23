@@ -1,22 +1,62 @@
+﻿using AutoMapper;
+using BackEnd.DTOs.UserDtos.Requests;
+using BackEnd.Utilities;
+using Domain.Models;
+using Domain.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BackEnd.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class UserController : ControllerBase
+    public class UserController : BaseController<UserController>
     {
-        private readonly ILogger<UserController> _logger;
 
-        public UserController(ILogger<UserController> logger)
+        public UserController(ILogger<UserController> logger, IAuthService authService, IMapper mapper) : base(logger, mapper, authService)
         {
-            _logger = logger;
         }
 
-        [HttpGet()]
-        public ActionResult<string> Get()
+        [HttpPut]
+        public async Task<ActionResult> UpdateUser(UpdateUserRequestDto request)
         {
-            return Ok("Hi (:");
+            if (request == null || request.PreviousPayDate?.Date > DateTime.Now)
+            {
+                return BadRequest();
+            }
+
+            string? userId = null;
+
+            //TODO: Handle it better
+            try
+            {
+                userId = User.GetUserId();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Unexpected Error: {ex}", ex);
+                BadRequest();
+            }
+
+            if (userId == null) return BadRequest();
+
+            ApplicationUser? user = null;
+
+            try
+            {
+                user = await _authService.GetUserAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Unexpected Error: {ex}", ex);
+                BadRequest();
+            }
+
+            if(user == null) return BadRequest();
+
+            user.PreviousPayDate = request.PreviousPayDate;
+            user.BiWeeklySalary = request.BiWeeklySalary;
+
+            await _authService.UpdateUserAsync(user);
+
+            return Ok();
         }
     }
 }
