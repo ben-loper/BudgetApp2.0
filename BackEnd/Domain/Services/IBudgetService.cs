@@ -1,9 +1,4 @@
 ﻿using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Domain.Services
 {
@@ -11,8 +6,8 @@ namespace Domain.Services
     {
         Task<Family> CreateBudgetForFamilyAsync(string familyId, Budget budget);
         Task<Family> CreateCategoryForBudgetAsync(string familyId, BudgetCategory category);
-        Task<Family> UpdateCategoryAsync(string categoryId, BudgetCategory category);
-        Task<Family> DeleteCategoryAsync(string categoryId);
+        Task<Family> UpdateCategoryAsync(string familyId, string budgetCategoryId, string budgetName, decimal amount);
+        Task<Family> DeleteCategoryAsync(string familyId, string categoryId);
         Task<Family> CreateMonthlyBillAsync(string familyId, MonthlyBill monthlyBill);
     }
 }
