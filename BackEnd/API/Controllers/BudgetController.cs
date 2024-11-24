@@ -45,9 +45,9 @@ namespace BackEnd.Controllers
                 _logger.LogError("Unexpected error while attempting to save category for budget - {ex}", ex);
                 return BadRequest();
             }
-            
-            var response = _mapper.Map<FamilyDto>(family);
-            
+
+            var response = await MapFamilyToDto(family);
+
             return Ok(response);
         }
 
@@ -76,7 +76,7 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            var response = _mapper.Map<FamilyDto>(family);
+            var response = await MapFamilyToDto(family);
 
             return Ok(response);
         }
