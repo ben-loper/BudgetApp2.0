@@ -17,6 +17,9 @@ namespace Domain.Models
         [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
         public DateTime CreatedDate { get; set; }
 
+        [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
+        public DateTime TransactionDate { get; set; }
+
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal Amount { get; set; }
         public required string Name { get; set; }

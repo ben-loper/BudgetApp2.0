@@ -54,14 +54,43 @@ namespace Infrastructure.Services
             return await _familyRepo.UpdateFamilyAsync(family);
         }
 
-        public Task<Family> DeleteCategoryAsync(string categoryId)
+        public async Task<Family> DeleteCategoryAsync(string familyId, string categoryId)
         {
-            throw new NotImplementedException();
+            var family = await _familyRepo.GetFamilyByIdAsync(familyId);
+
+            if (family == null || family.Id == null) throw new FamilyCouldNotBeFoundException();
+
+            if (family.Budget == null) throw new BudgetDoesNotExistForFamilyException();
+
+            var budgetCategory = family.Budget.BudgetCategories.Where(b => b.Id == categoryId).FirstOrDefault();
+
+            if (budgetCategory == null) throw new BudgetCategoryDoesNotExistException();
+
+            family.Budget.BudgetCategories.Remove(budgetCategory);
+
+            return await _familyRepo.UpdateFamilyAsync(family);
         }
 
-        public Task<Family> UpdateCategoryAsync(string categoryId, BudgetCategory category)
+        public async Task<Family> UpdateCategoryAsync(string familyId, string budgetCategoryId, string budgetName, decimal amount)
         {
-            throw new NotImplementedException();
+            var family = await _familyRepo.GetFamilyByIdAsync(familyId);
+
+            if (family == null || family.Id == null) throw new FamilyCouldNotBeFoundException();
+
+            if (family.Budget == null) throw new BudgetDoesNotExistForFamilyException();
+
+            var budgetCategory = family.Budget.BudgetCategories.Where(b => b.Id == budgetCategoryId).FirstOrDefault();
+
+            if (budgetCategory == null) throw new BudgetCategoryDoesNotExistException();
+
+            budgetCategory.Amount = amount;
+            budgetCategory.Name = budgetName;
+
+            family.Budget.BudgetCategories.Remove(budgetCategory);
+
+            family.Budget.BudgetCategories.Add(budgetCategory);
+
+            return await _familyRepo.UpdateFamilyAsync(family);
         }
     }
 }
