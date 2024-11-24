@@ -79,24 +79,7 @@ namespace BackEnd.Controllers
 
             if (family == null || family.Id == null) return NotFound();
 
-            var familyDto = _mapper.Map<FamilyDto>(family);
-
-            //TODO: Abstract this to a service or method
-            foreach (var userId in family.AdminUserIds)
-            {
-                var user = await _authService.GetUserAsync(userId);
-                familyDto.AdminUsers.Add(user.GetUsername());
-
-                if (familyDto.Budget != null) familyDto.Budget.PayThisMonth += user.TotalPayThisMonth();
-            }
-
-            foreach (var userId in family.MemberUserIds)
-            {
-                var user = await _authService.GetUserAsync(userId);
-                familyDto.Members.Add(user.GetUsername());
-
-                if (familyDto.Budget != null) familyDto.Budget.PayThisMonth += user.TotalPayThisMonth();
-            }
+            var familyDto = await MapFamilyToDto(family);
 
             return Ok(familyDto);
         }
@@ -151,21 +134,7 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            var familyDto = _mapper.Map<FamilyDto>(updatedFamily);
-
-            foreach (var adminUserId in updatedFamily.AdminUserIds)
-            {
-                var user = await _authService.GetUserAsync(adminUserId);
-
-                familyDto.AdminUsers.Add(user.GetUsername());
-            }
-
-            foreach (var adminUserId in updatedFamily.MemberUserIds)
-            {
-                var user = await _authService.GetUserAsync(adminUserId);
-
-                familyDto.Members.Add(user.GetUsername());
-            }
+            var familyDto = await MapFamilyToDto(family);
 
             return familyDto;
         }
@@ -219,21 +188,7 @@ namespace BackEnd.Controllers
                 return BadRequest();
             }
 
-            var familyDto = _mapper.Map<FamilyDto>(updatedFamily);
-
-            foreach (var adminUserId in updatedFamily.AdminUserIds)
-            {
-                var user = await _authService.GetUserAsync(adminUserId);
-
-                familyDto.AdminUsers.Add(user.GetUsername());
-            }
-
-            foreach (var adminUserId in updatedFamily.MemberUserIds)
-            {
-                var user = await _authService.GetUserAsync(adminUserId);
-
-                familyDto.Members.Add(user.GetUsername());
-            }
+            var familyDto = await MapFamilyToDto(family);
 
             return familyDto;
         }
