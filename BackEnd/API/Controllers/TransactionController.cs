@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BackEnd.DTOs.BudgetDtos;
 using BackEnd.DTOs.FamilyDtos;
+using BackEnd.DTOs.TransactionDtos.Requests;
 using BackEnd.Utilities;
 using Domain.Exceptions;
 using Domain.Models;
@@ -23,7 +24,7 @@ namespace BackEnd.Controllers
 
         //TODO: Add error handling
         [HttpPost()]
-        public async Task<ActionResult<FamilyDto>> AddTransactionToCategory(TransactionDto transaction)
+        public async Task<ActionResult<FamilyDto>> AddTransactionToCategory(AddTransactionRequest transaction)
         {
             if (transaction == null) return BadRequest();
 
@@ -42,7 +43,7 @@ namespace BackEnd.Controllers
 
         //TODO: Add error handling
         [HttpPut()]
-        public async Task<ActionResult<FamilyDto>> UpdateTransaction(TransactionDto transaction)
+        public async Task<ActionResult<FamilyDto>> UpdateTransaction(UpdateTransactionRequest transaction)
         {
             if (transaction == null) return BadRequest();
 
