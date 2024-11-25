@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BackEnd.DTOs.BudgetDtos;
+using BackEnd.DTOs.BudgetDtos.Requests;
 using BackEnd.DTOs.FamilyDtos;
 using BackEnd.Utilities;
 using Domain.Models;
@@ -49,6 +50,61 @@ namespace BackEnd.Controllers
             return Ok(response);
         }
 
+        [HttpDelete("MonthlyBill/{monthlyBillId}")]
+        public async Task<ActionResult<FamilyDto>> DeleteMonthlyBill(string monthlyBillId)
+        {
+
+            var family = await _familyService.GetFamilyByUserIdAsync(User.GetUserId());
+
+            if (family == null || family.Id == null)
+            {
+                _logger.LogError("User is not assigned to a family or no budget exists for family");
+                return BadRequest();
+            }
+
+            try
+            {
+                family = await _budgetService.DeleteMonthlyBillAsync(family.Id, monthlyBillId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Unexpected error while attempting to save category for budget - {ex}", ex);
+                return BadRequest();
+            }
+
+            var response = await MapFamilyToDto(family);
+
+            return Ok(response);
+        }
+
+        [HttpPut("MonthlyBill")]
+        public async Task<ActionResult<FamilyDto>> UpdateMonthlyBill(UpdateMonthlyBillRequest request)
+        {
+            if (request == null) return BadRequest();
+
+            var family = await _familyService.GetFamilyByUserIdAsync(User.GetUserId());
+
+            if (family == null || family.Id == null)
+            {
+                _logger.LogError("User is not assigned to a family or no budget exists for family");
+                return BadRequest();
+            }
+
+            try
+            {
+                family = await _budgetService.UpdateMonthlyBillAsync(family.Id, request.Id, request.Name, request.MonthlyAmount);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Unexpected error while attempting to save category for budget - {ex}", ex);
+                return BadRequest();
+            }
+
+            var response = await MapFamilyToDto(family);
+
+            return Ok(response);
+        }
+
         // TODO: Need more graceful handling of errors
         [HttpPost("BudgetCategory")]
         public async Task<ActionResult<FamilyDto>> CreateBudgetCategory(BudgetCategoryDto category)
@@ -81,7 +137,7 @@ namespace BackEnd.Controllers
         }
 
         [HttpPut("BudgetCategory")]
-        public async Task<ActionResult<FamilyDto>> UpdateMonthlyBill(UpdateBudgetCategoryRequest request)
+        public async Task<ActionResult<FamilyDto>> UpdateCategory(UpdateBudgetCategoryRequest request)
         {
             if (request == null) return BadRequest();
 
