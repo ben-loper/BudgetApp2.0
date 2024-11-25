@@ -71,6 +71,23 @@ namespace Infrastructure.Services
             return await _familyRepo.UpdateFamilyAsync(family);
         }
 
+        public async Task<Family> DeleteMonthlyBillAsync(string familyId, string monthlyBillId)
+        {
+            var family = await _familyRepo.GetFamilyByIdAsync(familyId);
+
+            if (family == null || family.Id == null) throw new FamilyCouldNotBeFoundException();
+
+            if (family.Budget == null) throw new BudgetDoesNotExistForFamilyException();
+
+            var monthlyBill = family.Budget.MonthlyBills.Where(b => b.Id == monthlyBillId).FirstOrDefault();
+
+            if (monthlyBill == null) throw new MonthlyBillDoesNotExistException();
+
+            family.Budget.MonthlyBills.Remove(monthlyBill);
+
+            return await _familyRepo.UpdateFamilyAsync(family);
+        }
+
         public async Task<Family> UpdateCategoryAsync(string familyId, string budgetCategoryId, string budgetName, decimal amount)
         {
             var family = await _familyRepo.GetFamilyByIdAsync(familyId);
@@ -89,6 +106,28 @@ namespace Infrastructure.Services
             family.Budget.BudgetCategories.Remove(budgetCategory);
 
             family.Budget.BudgetCategories.Add(budgetCategory);
+
+            return await _familyRepo.UpdateFamilyAsync(family);
+        }
+
+        public async Task<Family> UpdateMonthlyBillAsync(string familyId, string monthlyBillId, string name, decimal monthlyAmount)
+        {
+            var family = await _familyRepo.GetFamilyByIdAsync(familyId);
+
+            if (family == null || family.Id == null) throw new FamilyCouldNotBeFoundException();
+
+            if (family.Budget == null) throw new BudgetDoesNotExistForFamilyException();
+
+            var monthlyBill = family.Budget.MonthlyBills.Where(b => b.Id == monthlyBillId).FirstOrDefault();
+
+            if (monthlyBill == null) throw new MonthlyBillDoesNotExistException();
+
+            family.Budget.MonthlyBills.Remove(monthlyBill);
+
+            monthlyBill.Name = name;
+            monthlyBill.MonthlyAmount = monthlyAmount;
+
+            family.Budget.MonthlyBills.Add(monthlyBill);
 
             return await _familyRepo.UpdateFamilyAsync(family);
         }

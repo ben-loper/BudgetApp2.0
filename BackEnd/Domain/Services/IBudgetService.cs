@@ -9,5 +9,7 @@ namespace Domain.Services
         Task<Family> UpdateCategoryAsync(string familyId, string budgetCategoryId, string budgetName, decimal amount);
         Task<Family> DeleteCategoryAsync(string familyId, string categoryId);
         Task<Family> CreateMonthlyBillAsync(string familyId, MonthlyBill monthlyBill);
+        Task<Family> UpdateMonthlyBillAsync(string familyId, string monthlyBillId, string name, decimal monthlyAmount);
+        Task<Family> DeleteMonthlyBillAsync(string familyId, string monthlyBillId);
     }
 }
