@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BackEnd.DTOs.BudgetDtos;
 using BackEnd.DTOs.FamilyDtos;
+using BackEnd.DTOs.TransactionDtos.Requests;
 using Domain.Models;
 
 namespace BackEnd.Profiles
@@ -35,6 +36,9 @@ namespace BackEnd.Profiles
                 .ForMember(dest => dest.Id, opt => opt.Condition(src => src.Id != null))
                 .ReverseMap();
 
+
+            CreateMap<UpdateTransactionRequest, Transaction>();
+            CreateMap<AddTransactionRequest, Transaction>();
         }
     }
 }
